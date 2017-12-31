@@ -84,6 +84,15 @@
     </LinearLayout>
 
     <TextView
+        android:id="@+id/tv_show_press_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="8dp"
+        android:textColor="#259b24" />
+
+    <TextView
         android:id="@+id/tv_copyright"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

@@ -21,7 +21,7 @@ object JumpHelper {
      * @param coefficient 按压系数
      */
     fun jump(context: Context, distance: Float, windowTopY: Float, coefficient: Double = defaultCoefficient) {
-        val pressTime = (distance * coefficient).toInt()
+        val pressTime = getPressTime(distance, coefficient)
         val screenWidth = DensityUtil.getScreenWidthInPx(context)
 
         val startX = screenWidth * 0.2
@@ -33,5 +33,9 @@ object JumpHelper {
         Thread {
             CommandHelper.exec(cmd, true)
         }.start()
+    }
+
+    fun getPressTime(distance: Float, coefficient: Double = defaultCoefficient): Int {
+        return (distance * coefficient).toInt()
     }
 }

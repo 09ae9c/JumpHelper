@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">JumpHelper</string>
     <string name="copyright">jumpHelper&#169;classTC</string>
+    <string name="text_time_format">%1$ss</string>
 </resources>
