@@ -2,6 +2,7 @@ package tc.me.jumphelper
 
 import java.io.BufferedReader
 import java.io.DataOutputStream
+import java.io.File
 import java.io.InputStreamReader
 
 /**
@@ -20,7 +21,7 @@ object CommandHelper {
         return exec(arrayListOf(cmd), isRoot)
     }
 
-    fun exec(cmds: ArrayList<String>, isRoot: Boolean = true): CommandResult {
+    private fun exec(cmds: ArrayList<String>, isRoot: Boolean = true): CommandResult {
         try {
             val execProcess = Runtime.getRuntime().exec(if (isRoot) CMD_SU else CMD_SH)
             DataOutputStream(execProcess.outputStream).use {
@@ -49,6 +50,23 @@ object CommandHelper {
             return CommandResult(code, execResult, execError)
         } catch (e: Exception) {
             return CommandResult(-1, "", e.toString())
+        }
+    }
+
+    fun isDeviceRoot(): Boolean {
+        val buildTags = android.os.Build.TAGS
+        if (buildTags != null && buildTags.contains("test-keys")) {
+            return true
+        }
+
+        return try {
+            if (File("/system/app/Superuser.apk").exists()) {
+                true
+            } else {
+                exec(arrayListOf("/system/xbin/which su", "/system/bin/which su", "which su", "busybox which su")).code != -1
+            }
+        } catch (e: Exception) {
+            false
         }
     }
 }

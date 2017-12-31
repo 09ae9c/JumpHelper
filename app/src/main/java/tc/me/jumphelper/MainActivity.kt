@@ -4,10 +4,7 @@ import android.annotation.SuppressLint
 import android.graphics.PixelFormat
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
-import android.view.LayoutInflater
-import android.view.MotionEvent
-import android.view.View
-import android.view.WindowManager
+import android.view.*
 import android.widget.ImageView
 import android.widget.TextView
 import tc.me.jumphelper.util.DensityUtil
@@ -116,7 +113,9 @@ class MainActivity : AppCompatActivity() {
         }
 
         itemSend?.setOnClickListener {
-
+            val rootViewLocation = IntArray(2)
+            rootView.getLocationOnScreen(rootViewLocation)
+            JumpHelper.jump(this, currentDistance, rootViewLocation[1].toFloat())
         }
     }
 
