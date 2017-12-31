@@ -1,14 +1,17 @@
 # JumpHelper
 
-微信小游戏跳一跳辅助工具
+微信小游戏 跳一跳 辅助工具
 
-# ATTENTION
+# LIMITS
 
 - **Android Only**
 - **Root Required**
 
-# Preview
+# How it works
+![how it works](/preview/how_it_works.gif)
 
 
 # TODO
-[] Root Check
+- [ ] Root check
+- [ ] Device adaptive
+- [ ] User guide
