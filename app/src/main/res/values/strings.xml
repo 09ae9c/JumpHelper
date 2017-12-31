@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">JumpHelper</string>
+    <string name="copyright">jumpHelper&#169;classTC</string>
 </resources>
