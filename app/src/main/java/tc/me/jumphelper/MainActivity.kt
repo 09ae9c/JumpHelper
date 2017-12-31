@@ -7,6 +7,7 @@ import android.support.v7.app.AppCompatActivity
 import android.view.*
 import android.widget.ImageView
 import android.widget.TextView
+import br.tiagohm.markdownview.MarkdownView
 import tc.me.jumphelper.util.DensityUtil
 
 class MainActivity : AppCompatActivity() {
@@ -67,6 +68,7 @@ class MainActivity : AppCompatActivity() {
         windowManager.addView(floatLayout, mSideModeParams)
 
         updateFloatWindow(MODE_SIDE, floatLayout)
+        loadUserGuideData()
     }
 
     private fun initViews(rootView: View) {
@@ -134,5 +136,10 @@ class MainActivity : AppCompatActivity() {
 
         windowManager.updateViewLayout(rootView, if (mode == MODE_SIDE) mSideModeParams else mFullModeParams)
         currentMode = mode
+    }
+
+    private fun loadUserGuideData() {
+        val markdownView = findViewById<MarkdownView>(R.id.markdown_view)
+        markdownView.loadMarkdownFromUrl("https://raw.githubusercontent.com/classTC/JumpHelper/master/README.md")
     }
 }

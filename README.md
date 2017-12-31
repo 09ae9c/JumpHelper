@@ -8,7 +8,7 @@
 - **Root Required**
 
 # How it works
-![how it works](/preview/how_it_works.gif)
+![how it works](https://github.com/classTC/JumpHelper/blob/master/preview/how_it_works.gif)
 
 
 # TODO
