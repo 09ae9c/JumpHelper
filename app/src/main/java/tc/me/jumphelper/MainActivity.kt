@@ -124,9 +124,9 @@ class MainActivity : AppCompatActivity() {
 
         itemSend?.setOnClickListener {
             PressCountDownTimer(JumpHelper.getPressTime(currentDistance).toLong(), 10).start()
-//            val rootViewLocation = IntArray(2)
-//            rootView.getLocationOnScreen(rootViewLocation)
-//            JumpHelper.jump(this, currentDistance, rootViewLocation[1].toFloat())
+            val rootViewLocation = IntArray(2)
+            rootView.getLocationOnScreen(rootViewLocation)
+            JumpHelper.jump(this, currentDistance, rootViewLocation[1].toFloat())
         }
     }
 
