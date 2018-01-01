@@ -4,7 +4,7 @@
 
 # LIMITS
 
-- **Android 7.0 and after**
+- **Android 7.0 and later**
 
 # How to use
 ![how to use](http://7xu736.com1.z0.glb.clouddn.com/nufmi-cvmgi.gif)
