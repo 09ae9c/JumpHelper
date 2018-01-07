@@ -1,23 +1,41 @@
 package tc.me.jumphelper
 
 import android.annotation.SuppressLint
+import android.annotation.TargetApi
+import android.content.Context
+import android.content.Intent
 import android.graphics.PixelFormat
+import android.os.Build
 import android.os.Bundle
 import android.os.CountDownTimer
+import android.provider.Settings
+import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
-import android.view.*
+import android.text.TextUtils
+import android.view.LayoutInflater
+import android.view.MotionEvent
+import android.view.View
+import android.view.WindowManager
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import br.tiagohm.markdownview.MarkdownView
 import tc.me.jumphelper.util.DensityUtil
 import java.text.DecimalFormat
+
 
 class MainActivity : AppCompatActivity() {
 
     companion object {
         val MODE_SIDE = 0
         val MODE_FULL = 1
+
+        val USE_ACCESSIBILITY = 0
+        val USE_ROOT_SHELL = 1
+        val USE_NOTHING = -1
     }
+
+    private lateinit var mFloatView: View
 
     private var currentMode = MODE_SIDE
 
@@ -45,6 +63,8 @@ class MainActivity : AppCompatActivity() {
 
     private val timeFormat = DecimalFormat("0.0")
 
+    private var useType = USE_NOTHING
+
     @SuppressLint("InflateParams")
     @Suppress("DEPRECATION")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -67,15 +87,28 @@ class MainActivity : AppCompatActivity() {
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
                 PixelFormat.RGBA_8888)
 
-        val floatLayout = LayoutInflater.from(this).inflate(R.layout.view_panel, null, false)
-        initViews(floatLayout)
+        mFloatView = LayoutInflater.from(this).inflate(R.layout.view_panel, null, false)
+        initViews(mFloatView)
 
-        windowManager.addView(floatLayout, mSideModeParams)
+        windowManager.addView(mFloatView, mSideModeParams)
 
-        updateFloatWindow(MODE_SIDE, floatLayout)
+        updateFloatWindow(MODE_SIDE, mFloatView)
         loadUserGuideData()
     }
 
+    override fun onResume() {
+        super.onResume()
+        chooseAndConfigEnvironment()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if (this::mFloatView.isInitialized) {
+            windowManager.removeViewImmediate(mFloatView)
+        }
+    }
+
+    @TargetApi(Build.VERSION_CODES.N)
     private fun initViews(rootView: View) {
         itemExpand = rootView.findViewById(R.id.item_expand)
         itemMore = rootView.findViewById(R.id.item_more)
@@ -123,10 +156,13 @@ class MainActivity : AppCompatActivity() {
         }
 
         itemSend?.setOnClickListener {
-            PressCountDownTimer(JumpHelper.getPressTime(currentDistance).toLong(), 10).start()
+            if (useType == USE_NOTHING) {
+                return@setOnClickListener
+            }
+            PressCountDownTimer(JumpHelper.getPressTime(currentDistance), 10).start()
             val rootViewLocation = IntArray(2)
             rootView.getLocationOnScreen(rootViewLocation)
-            JumpHelper.jump(this, currentDistance, rootViewLocation[1].toFloat())
+            JumpHelper.jump(this, useType, currentDistance, rootViewLocation[1].toFloat())
         }
     }
 
@@ -153,7 +189,7 @@ class MainActivity : AppCompatActivity() {
         markdownView.loadMarkdownFromUrl("https://raw.githubusercontent.com/classTC/JumpHelper/master/README.md")
     }
 
-    private fun showPredictPressTime(pressTimeInMillis: Int) {
+    private fun showPredictPressTime(pressTimeInMillis: Long) {
         pressTime?.text = String.format(getString(R.string.text_time_format),
                 timeFormat.format(pressTimeInMillis / 1000f))
         pressTime?.visibility = View.VISIBLE
@@ -162,6 +198,35 @@ class MainActivity : AppCompatActivity() {
     private fun hidePredictPressTime() {
         pressTime?.text = ""
         pressTime?.visibility = View.GONE
+    }
+
+    private fun chooseAndConfigEnvironment() {
+        useType = when {
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.N -> {// if N and later, use AccessibilityService
+                if (!isAccessibilitySettingsOn(this)) {
+                    guideToOpenAccessibilityService()
+                }
+                USE_ACCESSIBILITY
+            }
+            CommandHelper.isDeviceRoot() -> // if device is rooted, use root shell
+                USE_ROOT_SHELL
+            else -> {
+                Toast.makeText(this, "当前设备不支持", Toast.LENGTH_SHORT).show()
+                USE_NOTHING
+            }
+        }
+    }
+
+    private fun guideToOpenAccessibilityService() {
+        AlertDialog.Builder(this)
+                .setTitle("开启辅助功能")
+                .setMessage("使用此功能需要开启辅助服务，是否前往设置开启？")
+                .setPositiveButton("前往设置", { _, _ ->
+                    val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
+                    startActivity(intent)
+                })
+                .create()
+                .show()
     }
 
     inner class PressCountDownTimer(totalTimeInMillis: Long, intervalInMillis: Long)
@@ -175,5 +240,32 @@ class MainActivity : AppCompatActivity() {
                         timeFormat.format(millisUntilFinished / 1000f))
             }
         }
+    }
+
+    private fun isAccessibilitySettingsOn(mContext: Context): Boolean {
+        val service = packageName + "/" + EventAccessibilityService::class.java.canonicalName
+        val accessibilityEnabled = try {
+            Settings.Secure.getInt(mContext.contentResolver,
+                    android.provider.Settings.Secure.ACCESSIBILITY_ENABLED)
+        } catch (e: Settings.SettingNotFoundException) {
+            0
+        }
+
+        val mStringColonSplitter = TextUtils.SimpleStringSplitter(':')
+
+        if (accessibilityEnabled == 1) {
+            val settingValue = Settings.Secure.getString(mContext.contentResolver,
+                    Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES)
+            if (settingValue != null) {
+                mStringColonSplitter.setString(settingValue)
+                while (mStringColonSplitter.hasNext()) {
+                    val accessibilityService = mStringColonSplitter.next()
+                    if (accessibilityService.equals(service, ignoreCase = true)) {
+                        return true
+                    }
+                }
+            }
+        }
+        return false
     }
 }
